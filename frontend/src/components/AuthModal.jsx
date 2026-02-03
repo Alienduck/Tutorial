@@ -43,7 +43,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSwitchMode }) => {
       const { data } = await api.post(endpoint, {
         email: formData.email,
         password: formData.password,
-      }).then(response => response.data).catch(err => { throw err; });
+      });
 
       if (mode === 'login') {
         onLogin(data.token, { email: formData.email });
@@ -53,7 +53,8 @@ const AuthModal = ({ mode, onClose, onLogin, onSwitchMode }) => {
         setFormData({ email: formData.email, password: '', confirmPassword: '' });
       }
     } catch (err) {
-      setError(err.response?.data || err.message || 'Authentication failed');
+      const errorMessage = err.response?.data?.message || err.response?.data || err.message || 'Une erreur est survenue';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

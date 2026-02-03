@@ -22,7 +22,8 @@ const Dashboard = ({ onLogout }) => {
       const { data } = await api.get('/user/all');
       setUsers(data);
     } catch (err) {
-      console.error('Error fetching users:', err);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la récupération des utilisateurs';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -38,7 +39,8 @@ const Dashboard = ({ onLogout }) => {
       setShowModal(false);
       setFormData({ email: '', password: '' });
     } catch (err) {
-      setError(err.response?.data || err.message);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la création';
+      setError(errorMessage);
     }
   };
 
@@ -53,7 +55,8 @@ const Dashboard = ({ onLogout }) => {
       setEditingUser(null);
       setFormData({ email: '', password: '' });
     } catch (err) {
-      setError(err.response?.data || err.message);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la mise à jour';
+      setError(errorMessage);
     }
   };
 
@@ -64,7 +67,8 @@ const Dashboard = ({ onLogout }) => {
       await api.delete(`/user/${userId}`);
       await fetchUsers();
     } catch (err) {
-      console.error('Error deleting user:', err);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la suppression';
+      setError(errorMessage);
     }
   };
 
