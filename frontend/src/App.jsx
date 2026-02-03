@@ -1,35 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect, createContext, useContext } from 'react';
+import LandingPage from './components/LandingPage';
+import Dashboard from './components/Dashboard';
+import AuthModal from './components/AuthModal';
+import './App.css';
+
+const ThemeContext = createContext();
+export const useTheme = () => useContext(ThemeContext);
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark';
+  });
+  
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  const handleLogin = (token, user) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    setIsAuthenticated(true);
+    setShowAuthModal(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+  };
+
+  const openAuth = (mode) => {
+    setAuthMode(mode);
+    setShowAuthModal(true);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <div className="app">
+        {!isAuthenticated ? (
+          <LandingPage onOpenAuth={openAuth} />
+        ) : (
+          <Dashboard onLogout={handleLogout} />
+        )}
+        
+        {showAuthModal && (
+          <AuthModal
+            mode={authMode}
+            onClose={() => setShowAuthModal(false)}
+            onLogin={handleLogin}
+            onSwitchMode={(mode) => setAuthMode(mode)}
+          />
+        )}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </ThemeContext.Provider>
+  );
 }
 
-export default App
+export default App;
