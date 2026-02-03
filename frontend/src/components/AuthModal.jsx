@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import '../AuthModal.css';
+import { API_URL } from '../../services/config';
+import api from '../../services/Axios';
 
 const AuthModal = ({ mode, onClose, onLogin, onSwitchMode }) => {
   const [formData, setFormData] = useState({
@@ -37,22 +39,11 @@ const AuthModal = ({ mode, onClose, onLogin, onSwitchMode }) => {
 
     try {
       const endpoint = mode === 'login' ? '/user/login' : '/user/register';
-      const response = await fetch(`http://localhost:3000${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      
+      const { data } = await api.post(endpoint, {
+        email: formData.email,
+        password: formData.password,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Authentication failed');
-      }
 
       if (mode === 'login') {
         onLogin(data.token, { email: formData.email });
@@ -62,7 +53,8 @@ const AuthModal = ({ mode, onClose, onLogin, onSwitchMode }) => {
         setFormData({ email: formData.email, password: '', confirmPassword: '' });
       }
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.response?.data?.message || err.response?.data || err.message || 'Une erreur est survenue';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

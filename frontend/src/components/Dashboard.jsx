@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../App';
 import '../Dashboard.css';
+import api from '../../services/Axios';
 
 const Dashboard = ({ onLogout }) => {
   const { theme, toggleTheme } = useTheme();
@@ -18,16 +19,11 @@ const Dashboard = ({ onLogout }) => {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/user/all', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
+      const { data } = await api.get('/user/all');
       setUsers(data);
     } catch (err) {
-      console.error('Error fetching users:', err);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la récupération des utilisateurs';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -38,23 +34,13 @@ const Dashboard = ({ onLogout }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/user/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error('Failed to create user');
-
+      await api.post('/user/register', formData);
       await fetchUsers();
       setShowModal(false);
       setFormData({ email: '', password: '' });
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la création';
+      setError(errorMessage);
     }
   };
 
@@ -63,24 +49,14 @@ const Dashboard = ({ onLogout }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/user/${editingUser._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error('Failed to update user');
-
+      await api.put(`/user/${editingUser._id}`, formData);
       await fetchUsers();
       setShowModal(false);
       setEditingUser(null);
       setFormData({ email: '', password: '' });
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la mise à jour';
+      setError(errorMessage);
     }
   };
 
@@ -88,19 +64,11 @@ const Dashboard = ({ onLogout }) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/user/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to delete user');
-
+      await api.delete(`/user/${userId}`);
       await fetchUsers();
     } catch (err) {
-      console.error('Error deleting user:', err);
+      const errorMessage = err.response?.data?.message || err.response?.data || 'Erreur lors de la suppression';
+      setError(errorMessage);
     }
   };
 
