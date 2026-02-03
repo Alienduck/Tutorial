@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import db from '../backend/db/db.js';
+import db from './db/db.js';
 import mongoose from 'mongoose';
 import userRoute from './routes/user.route.js';
 
