@@ -43,7 +43,7 @@ const AuthModal = ({ mode, onClose, onLogin, onSwitchMode }) => {
       const { data } = await api.post(endpoint, {
         email: formData.email,
         password: formData.password,
-      });
+      }).then(response => response.data).catch(err => { throw err; });
 
       if (mode === 'login') {
         onLogin(data.token, { email: formData.email });
