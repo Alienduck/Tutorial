@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import db from "./db/db.js";
 import userRoute from "./routes/user.route.js";
 import cors from "cors";
+import courseRoute from "./routes/course.route.js";
 
 dotenv.config();
 
@@ -25,3 +26,4 @@ app.listen(process.env.PORT, () => {
 db();
 
 app.use('/user', userRoute);
+app.use('/course', courseRoute);
